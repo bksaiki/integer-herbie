@@ -37,3 +37,21 @@
 
 (define (int/ arg #:bits [bits 64] . rest)
   (normalize-int (apply / arg rest) bits))
+
+(define (intremainder arg mod #:bits [bits 64])
+  (normalize-int (remainder arg mod) bits))
+
+(define (intshl arg shift #:bits [bits 64])
+  (normalize-int (arithmetic-shift arg shift) bits))
+
+(define (intshr arg shift #:bits [bits 64])
+  (normalize-int (arithmetic-shift arg (- shift)) bits))
+
+(define (intand arg1 arg2 #:bits [bits 64])
+  (normalize-int (bitwise-and arg1 arg2) bits))
+
+(define (intor arg1 arg2 #:bits [bits 64])
+  (normalize-int (bitwise-ior arg1 arg2) bits))
+
+(define (intxor arg1 arg2 #:bits [bits 64])
+  (normalize-int (bitwise-xor arg1 arg2 bits) bits))
