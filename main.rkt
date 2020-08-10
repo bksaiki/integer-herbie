@@ -29,6 +29,20 @@
   64
   (const #f))
 
+;; Constants
+
+(define-constant (INT_MAX INT_MAX.f64) integer
+  [fl (λ () (sub1 (expt 2 63)))]
+  [bf (λ () (bf (sub1 (expt 2 63))))]
+  [ival #f]
+  [nonffi (λ () (sub1 (expt 2 63)))])
+
+(define-constant (INT_MIN INT_MIN.f64) integer
+  [fl (λ () (- (expt 2 63)))]
+  [bf (λ () (bf (- (expt 2 63))))]
+  [ival #f]
+  [nonffi (λ () (- (expt 2 63)))])  
+
 ;; Operators
 
 (define-operator (+ +.i64 integer integer) integer
@@ -57,6 +71,10 @@
 (define-operator (remainder remainder.i64 integer integer) integer
   [fl intremainder] [bf bfremainder] [ival #f]
   [nonffi intremainder])
+
+(define-operator (fabs abs.i64 integer) integer 
+  [fl intabs] [bf bfabs] [ival #f]
+  [nonffi intabs])
 
 ;; Bitwise operators
 
@@ -217,7 +235,17 @@
 
 ;; Rewrite rules
 
-(define-ruleset associativity-i64 (arithmetic simplify)
+(define-ruleset commutativity-i64 (arithmetic simplify integer)
+  #:type ([a integer] [b integer])
+  [i64-commutative+     (+.i64 a b)       (+.i64 b a)]
+  [i64-commutative*     (*.i64 a b)       (*.i64 b a)])
+
+(define-ruleset add2-i64 (arithmetic simplify integer)
+  #:type ([a integer])
+  [i64-add2-mul   (+.i64 a a)     (*.i64 2 a)]
+  [i64-add2-shl   (+.i64 a a)     (shl.i64 a 1)])
+
+(define-ruleset associativity-i64 (arithmetic simplify integer)
   #:type ([a integer] [b integer] [c integer])
   [i64-associate-+r+     (+.i64 a (+.i64 b c))         (+.i64 (+.i64 a b) c)]
   [i64-associate-+l+     (+.i64 (+.i64 a b) c)         (+.i64 a (+.i64 b c))]
@@ -236,7 +264,7 @@
   [i64-associate-/r/     (/.i64 a (/.i64 b c))         (*.i64 (/.i64 a b) c)]
   [i64-associate-/l/     (/.i64 (/.i64 b c) a)         (/.i64 b (*.i64 a c))])
 
-(define-ruleset distributivity-i64 (arithmetic simplify)
+(define-ruleset distributivity-i64 (arithmetic simplify integer)
   #:type ([a integer] [b integer] [c integer])
   [i64-distribute-lft-in      (*.i64 a (+.i64 b c))             (+.i64 (*.i64 a b) (*.i64 a c))]
   [i64-distribute-rgt-in      (*.i64 a (+.i64 b c))             (+.i64 (*.i64 b a) (*.i64 c a))]
@@ -247,7 +275,7 @@
   [i64-distribute-lft1-in     (+.i64 (*.i64 b a) a)             (*.i64 (+.i64 b 1) a)]
   [i64-distribute-rgt1-in     (+.i64 a (*.i64 c a))             (*.i64 (+.i64 c 1) a)])
 
-(define-ruleset id-reduce-i64 (arithmetic simplify)
+(define-ruleset id-reduce-i64 (arithmetic simplify integer)
   #:type ([a integer])
   [i64-remove-double-div  (/.i64 1 (/.i64 1 a))     a]
   [i64-rgt-mult-inverse   (*.i64 a (/.i64 1 a))     1]
@@ -257,7 +285,6 @@
   [i64-div0               (/.i64 0 a)               0]
   [i64-mul0-lft           (*.i64 0 a)               0]
   [i64-mul0-rgt           (*.i64 a 0)               0])
-
 
 (define-ruleset id-i64 (arithmetic simplify integer)
   #:type ([a integer])
@@ -279,9 +306,18 @@
 
 (define-ruleset average-i64 (arithmetic integer)
   #:type ([a integer] [b integer])
-  [i64-avg2   (/.i64 (+.i64 a b) 2)  (if (and (<.i64 (+.i64 a b) 0) (==.i64 (remainder.i64 (+.i64 a b) 2) 1))
-                                         (+.i64 (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)) 1)
-                                         (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)))])
+  [i64-avg2   (/.i64 (+.i64 a b) 2)   (+.i64 (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)) 
+                                             (and.i64 (neg.i64 (shr.i64 (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)) 63))
+                                                      (xor.i64 a b)))])
+
+(define-ruleset saturate-i64 (arithmetic integer)
+  #:type ([a integer] [b integer])
+  [i64-saturate-add+  (+.i64 a b)    INT_MAX.f64]
+  [i64-saturate-add-  (+.i64 a b)    INT_MIN.f64]
+  [i64-saturate-sub+  (-.i64 a b)    INT_MAX.f64]
+  [i64-saturate-sub-  (-.i64 a b)    INT_MIN.f64]
+  [i64-saturate-mul+  (*.i64 a b)    INT_MAX.f64]
+  [i64-saturate-mul-  (*.i64 a b)    INT_MIN.f64])
 
 (define-ruleset mixed-int-f64 (arithmetic)
   #:type ([a binary64] [b integer])

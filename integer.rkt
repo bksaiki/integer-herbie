@@ -35,11 +35,16 @@
 (define (int* arg #:bits [bits 64] . rest)
   (normalize-int (apply * arg rest) bits))
 
-(define (int/ arg #:bits [bits 64] . rest)
-  (normalize-int (apply / arg rest) bits))
+(define (int/ arg div #:bits [bits 64] . rest)
+  (if (ormap zero? (cons div rest))
+      0
+      (normalize-int (apply / arg div rest) bits)))
 
 (define (intremainder arg mod #:bits [bits 64])
   (normalize-int (remainder arg mod) bits))
+
+(define (intabs arg #:bits [bits 64])
+  (normalize-int (abs arg) bits))
 
 (define (intshl arg shift #:bits [bits 64])
   (normalize-int (arithmetic-shift arg shift) bits))

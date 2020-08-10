@@ -1,0 +1,34 @@
+(FPCore (x y)
+  :name "Midpoint+"
+  :precision integer
+  :pre (and (> x 1e18) (> y 1e18))
+  (/ (+ x y) 2))
+
+(FPCore (x y)
+  :name "Midpoint-"
+  :precision integer
+  :pre (and (< x -1e18) (< y -1e18))
+  (/ (+ x y) 2))
+
+(FPCore (x y z)
+  :name "Average3"
+  :precision integer
+  (/ (+ x y z) 3))
+
+(FPCore (x y)
+  :name "Add (overflow)"
+  :precision integer
+  :pre (and (> x 1e18) (> y 1e18))
+  (+ x y))
+
+(FPCore (x y)
+  :name "Multiply (overflow)"
+  :precision integer
+  :pre (and (> x 1e10) (> y 1e10))
+  (* x y))
+
+(FPCore (x y)
+  :name "Associative"
+  :precision integer
+  :pre (and (> x 1e5) (> y 1e5))
+  (/ (* x 1e5) y))
