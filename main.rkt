@@ -21,23 +21,23 @@
 
 ;; Integer representation
 
-(define-representation (integer integer (curryr valid-int? 64))
-  (compose (curryr normalize-int 64) (curryr clamp-int 64) bigfloat->real)
+(define-representation (integer integer (curryr valid-int? 32))
+  (compose (curryr normalize-int 32) (curryr clamp-int 32) bigfloat->real)
   bf
-  (curryr ordinal->int 64)
-  (curryr int->ordinal 64)
-  64
+  (compose (curryr normalize-int 32) (curryr ordinal->int 32))
+  (compose (curryr int->ordinal 32) (curryr clamp-int 32))
+  32
   (const #f))
 
 ;; Constants
 
-(define-constant (INT_MAX INT_MAX.f64) integer
+(define-constant (INT_MAX INT_MAX.f32) integer
   [fl (λ () (sub1 (expt 2 63)))]
   [bf (λ () (bf (sub1 (expt 2 63))))]
   [ival #f]
   [nonffi (λ () (sub1 (expt 2 63)))])
 
-(define-constant (INT_MIN INT_MIN.f64) integer
+(define-constant (INT_MIN INT_MIN.f32) integer
   [fl (λ () (- (expt 2 63)))]
   [bf (λ () (bf (- (expt 2 63))))]
   [ival #f]
@@ -45,34 +45,34 @@
 
 ;; Operators
 
-(define-operator (+ +.i64 integer integer) integer
+(define-operator (+ +.i32 integer integer) integer
   [fl int+] [bf bf+] [ival #f]
   [nonffi int+])
 
-(define-operator (- neg.i64 integer) integer
+(define-operator (- neg.i32 integer) integer
   [fl int-] [bf bf-] [ival #f]
   [nonffi int-])
 
-(define-operator (- -.i64 integer integer) integer
+(define-operator (- -.i32 integer integer) integer
   [fl int-] [bf bf-] [ival #f]
   [nonffi int-])
 
-(define-operator (* *.i64 integer integer) integer
+(define-operator (* *.i32 integer integer) integer
   [fl int*] [bf bf*] [ival #f]
   [nonffi int*])
 
-(define-operator (/ /.i64 integer integer) integer
+(define-operator (/ /.i32 integer integer) integer
   [fl int/] [bf bf/] [ival #f]
   [nonffi int/])
 
 (define (bfremainder x mod)
   (bf- x (bf* (bfround (bf/ x mod)) mod)))
 
-(define-operator (remainder remainder.i64 integer integer) integer
+(define-operator (remainder remainder.i32 integer integer) integer
   [fl intremainder] [bf bfremainder] [ival #f]
   [nonffi intremainder])
 
-(define-operator (fabs abs.i64 integer) integer 
+(define-operator (fabs abs.i32 integer) integer 
   [fl intabs] [bf bfabs] [ival #f]
   [nonffi intabs])
 
@@ -102,23 +102,23 @@
       (normalize-int (clamp-int (bigfloat->real x) 1024) 1024)
       (normalize-int (clamp-int (bigfloat->real y) 1024) 1024))))
 
-(define-operator (shl shl.i64 integer integer) integer
+(define-operator (shl shl.i32 integer integer) integer
   [fl intshl] [bf bfshl] [ival #f]
   [nonffi intshl])
 
-(define-operator (shr shr.i64 integer integer) integer
+(define-operator (shr shr.i32 integer integer) integer
   [fl intshr] [bf bfshr] [ival #f]
   [nonffi intshr])
 
-(define-operator (and and.i64 integer integer) integer
+(define-operator (and and.i32 integer integer) integer
   [fl intand] [bf bfand] [ival #f]
   [nonffi intand])
 
-(define-operator (or or.i64 integer integer) integer
+(define-operator (or or.i32 integer integer) integer
   [fl intor] [bf bfor] [ival #f]
   [nonffi intor])
 
-(define-operator (xor xor.i64 integer integer) integer
+(define-operator (xor xor.i32 integer integer) integer
   [fl intxor] [bf bfxor] [ival #f]
   [nonffi intxor])
 
@@ -130,32 +130,32 @@
 (define (bf!=-fn . args)
   (not (check-duplicates args bf=)))
 
-(define-operator (== ==.i64 integer integer) bool
+(define-operator (== ==.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl (comparator =)] [bf (comparator bf=)] [ival #f]
   [nonffi (comparator =)])
 
-(define-operator (!= !=.i64 integer integer) bool
+(define-operator (!= !=.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl !=-fn] [bf bf!=-fn] [ival #f]
   [nonffi !=-fn])
 
-(define-operator (< <.i64 integer integer) bool
+(define-operator (< <.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl (comparator <)] [bf (comparator bf<)] [ival #f]
   [nonffi (comparator <)])
 
-(define-operator (> >.i64 integer integer) bool
+(define-operator (> >.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl (comparator >)] [bf (comparator bf>)] [ival #f]
   [nonffi (comparator >)])
 
-(define-operator (<= <=.i64 integer integer) bool
+(define-operator (<= <=.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl (comparator <=)] [bf (comparator bf<=)] [ival #f]
   [nonffi (comparator <=)])
 
-(define-operator (>= >=.i64 integer integer) bool
+(define-operator (>= >=.i32 integer integer) bool
   [itype 'integer] [otype 'bool] ; Override number of arguments
   [fl (comparator >=)] [bf (comparator bf>=)] [ival #f]
   [nonffi (comparator >=)])
@@ -191,7 +191,7 @@
            (define float-proc 
              (get-ffi-obj 'id_f #f (_fun #,@(ffi-types atypes* #'_float) -> #,(ffi-types rtype* #'_float))
                           (lambda () (*unknown-f-ops* (cons 'opf32 (*unknown-f-ops*))) (curry fallback #'float))))
-           (define-operator (op opf64 #,@(param-types atypes* 'binary64)) #,(param-types rtype* 'binary64)
+           (define-operator (op opf64 #,@(param-types atypes* 'binary32)) #,(param-types rtype* 'binary32)
              [fl (λ args (apply double-proc args))]
              [key value] ...)
            (define-operator (op opf32 #,@(param-types atypes* 'binary32)) #,(param-types rtype* 'binary32)
@@ -208,7 +208,7 @@
 (define (ldexp x y)
   (* x (expt 2 y)))
 
-(define-operator/libm (ldexp ldexp.f64 ldexp.f32 real integer) real
+(define-operator/libm (ldexp ldexp.f32 ldexp.f32 real integer) real
   [libm ldexp ldexpf] [bf bfldexp] [ival #f]
   [nonffi ldexp])
 
@@ -218,109 +218,109 @@
 (define (ilogb x)
   (round (log x 2)))
 
-(define-operator/libm (ilogb ilogb.f64 ilogb.f32 real) integer
+(define-operator/libm (ilogb ilogb.f32 ilogb.f32 real) integer
   [libm ilogb ilogbf] [bf bfilogb] [ival #f]
   [nonffi ilogb])
 
 (define (bf-bessel f) ; n is an integer
   (λ (n x) (f (bigfloat->integer (bfround n)) x)))
 
-(define-operator/libm (jn jn.f64 jn.f32 integer real) real
+(define-operator/libm (jn jn.f32 jn.f32 integer real) real
   [libm jn jnf] [bf (bf-bessel bfbesj)] [ival #f]
   [nonffi (from-bigfloat (bf-bessel bfbesj))])
 
-(define-operator/libm (yn yn.f64 yn.f32 integer real) real
+(define-operator/libm (yn yn.f32 yn.f32 integer real) real
   [libm yn ynf] [bf (bf-bessel bfbesy)] [ival #f]
   [nonffi (from-bigfloat (bf-bessel bfbesy))])
 
 ;; Rewrite rules
 
-(define-ruleset commutativity-i64 (arithmetic simplify integer)
+(define-ruleset commutativity-i32 (arithmetic simplify integer)
   #:type ([a integer] [b integer])
-  [i64-commutative+     (+.i64 a b)       (+.i64 b a)]
-  [i64-commutative*     (*.i64 a b)       (*.i64 b a)])
+  [i32-commutative+     (+.i32 a b)       (+.i32 b a)]
+  [i32-commutative*     (*.i32 a b)       (*.i32 b a)])
 
-(define-ruleset add2-i64 (arithmetic simplify integer)
+(define-ruleset add2-i32 (arithmetic simplify integer)
   #:type ([a integer])
-  [i64-add2-mul   (+.i64 a a)     (*.i64 2 a)]
-  [i64-add2-shl   (+.i64 a a)     (shl.i64 a 1)])
+  [i32-add2-mul   (+.i32 a a)     (*.i32 2 a)]
+  [i32-add2-shl   (+.i32 a a)     (shl.i32 a 1)])
 
-(define-ruleset associativity-i64 (arithmetic simplify integer)
+(define-ruleset associativity-i32 (arithmetic simplify integer)
   #:type ([a integer] [b integer] [c integer])
-  [i64-associate-+r+     (+.i64 a (+.i64 b c))         (+.i64 (+.i64 a b) c)]
-  [i64-associate-+l+     (+.i64 (+.i64 a b) c)         (+.i64 a (+.i64 b c))]
-  [i64-associate-+r-     (+.i64 a (-.i64 b c))         (-.i64 (+.i64 a b) c)]
-  [i64-associate-+l-     (+.i64 (-.i64 a b) c)         (-.i64 a (-.i64 b c))]
-  [i64-associate--r+     (-.i64 a (+.i64 b c))         (-.i64 (-.i64 a b) c)]
-  [i64-associate--l+     (-.i64 (+.i64 a b) c)         (+.i64 a (-.i64 b c))]
-  [i64-associate--l-     (-.i64 (-.i64 a b) c)         (-.i64 a (+.i64 b c))]
-  [i64-associate--r-     (-.i64 a (-.i64 b c))         (+.i64 (-.i64 a b) c)]
-  [i64-associate-*r*     (*.i64 a (*.i64 b c))         (*.i64 (*.i64 a b) c)]
-  [i64-associate-*l*     (*.i64 (*.i64 a b) c)         (*.i64 a (*.i64 b c))]
-  [i64-associate-*r/     (*.i64 a (/.i64 b c))         (/.i64 (*.i64 a b) c)]
-  [i64-associate-*l/     (*.i64 (/.i64 a b) c)         (/.i64 (*.i64 a c) b)]
-  [i64-associate-/r*     (/.i64 a (*.i64 b c))         (/.i64 (/.i64 a b) c)]
-  [i64-associate-/l*     (/.i64 (*.i64 b c) a)         (/.i64 b (/.i64 a c))]
-  [i64-associate-/r/     (/.i64 a (/.i64 b c))         (*.i64 (/.i64 a b) c)]
-  [i64-associate-/l/     (/.i64 (/.i64 b c) a)         (/.i64 b (*.i64 a c))])
+  [i32-associate-+r+     (+.i32 a (+.i32 b c))         (+.i32 (+.i32 a b) c)]
+  [i32-associate-+l+     (+.i32 (+.i32 a b) c)         (+.i32 a (+.i32 b c))]
+  [i32-associate-+r-     (+.i32 a (-.i32 b c))         (-.i32 (+.i32 a b) c)]
+  [i32-associate-+l-     (+.i32 (-.i32 a b) c)         (-.i32 a (-.i32 b c))]
+  [i32-associate--r+     (-.i32 a (+.i32 b c))         (-.i32 (-.i32 a b) c)]
+  [i32-associate--l+     (-.i32 (+.i32 a b) c)         (+.i32 a (-.i32 b c))]
+  [i32-associate--l-     (-.i32 (-.i32 a b) c)         (-.i32 a (+.i32 b c))]
+  [i32-associate--r-     (-.i32 a (-.i32 b c))         (+.i32 (-.i32 a b) c)]
+  [i32-associate-*r*     (*.i32 a (*.i32 b c))         (*.i32 (*.i32 a b) c)]
+  [i32-associate-*l*     (*.i32 (*.i32 a b) c)         (*.i32 a (*.i32 b c))]
+  [i32-associate-*r/     (*.i32 a (/.i32 b c))         (/.i32 (*.i32 a b) c)]
+  [i32-associate-*l/     (*.i32 (/.i32 a b) c)         (/.i32 (*.i32 a c) b)]
+  [i32-associate-/r*     (/.i32 a (*.i32 b c))         (/.i32 (/.i32 a b) c)]
+  [i32-associate-/l*     (/.i32 (*.i32 b c) a)         (/.i32 b (/.i32 a c))]
+  [i32-associate-/r/     (/.i32 a (/.i32 b c))         (*.i32 (/.i32 a b) c)]
+  [i32-associate-/l/     (/.i32 (/.i32 b c) a)         (/.i32 b (*.i32 a c))])
 
-(define-ruleset distributivity-i64 (arithmetic simplify integer)
+(define-ruleset distributivity-i32 (arithmetic simplify integer)
   #:type ([a integer] [b integer] [c integer])
-  [i64-distribute-lft-in      (*.i64 a (+.i64 b c))             (+.i64 (*.i64 a b) (*.i64 a c))]
-  [i64-distribute-rgt-in      (*.i64 a (+.i64 b c))             (+.i64 (*.i64 b a) (*.i64 c a))]
-  [i64-distribute-lft-out     (+.i64 (*.i64 a b) (*.i64 a c))   (*.i64 a (+.i64 b c))]
-  [i64-distribute-lft-out--   (-.i64 (*.i64 a b) (*.i64 a c))   (*.i64 a (-.i64 b c))]
-  [i64-distribute-rgt-out     (+.i64 (*.i64 b a) (*.i64 c a))   (*.i64 a (+.i64 b c))]
-  [i64-distribute-rgt-out--   (-.i64 (*.i64 b a) (*.i64 c a))   (*.i64 a (-.i64 b c))]
-  [i64-distribute-lft1-in     (+.i64 (*.i64 b a) a)             (*.i64 (+.i64 b 1) a)]
-  [i64-distribute-rgt1-in     (+.i64 a (*.i64 c a))             (*.i64 (+.i64 c 1) a)])
+  [i32-distribute-lft-in      (*.i32 a (+.i32 b c))             (+.i32 (*.i32 a b) (*.i32 a c))]
+  [i32-distribute-rgt-in      (*.i32 a (+.i32 b c))             (+.i32 (*.i32 b a) (*.i32 c a))]
+  [i32-distribute-lft-out     (+.i32 (*.i32 a b) (*.i32 a c))   (*.i32 a (+.i32 b c))]
+  [i32-distribute-lft-out--   (-.i32 (*.i32 a b) (*.i32 a c))   (*.i32 a (-.i32 b c))]
+  [i32-distribute-rgt-out     (+.i32 (*.i32 b a) (*.i32 c a))   (*.i32 a (+.i32 b c))]
+  [i32-distribute-rgt-out--   (-.i32 (*.i32 b a) (*.i32 c a))   (*.i32 a (-.i32 b c))]
+  [i32-distribute-lft1-in     (+.i32 (*.i32 b a) a)             (*.i32 (+.i32 b 1) a)]
+  [i32-distribute-rgt1-in     (+.i32 a (*.i32 c a))             (*.i32 (+.i32 c 1) a)])
 
-(define-ruleset id-reduce-i64 (arithmetic simplify integer)
+(define-ruleset id-reduce-i32 (arithmetic simplify integer)
   #:type ([a integer])
-  [i64-remove-double-div  (/.i64 1 (/.i64 1 a))     a]
-  [i64-rgt-mult-inverse   (*.i64 a (/.i64 1 a))     1]
-  [i64-lft-mult-inverse   (*.i64 (/.i64 1 a) a)     1]
-  [i64-+-inverses         (-.i64 a a)               0]
-  [i64-*-inverses         (/.i64 a a)               1]
-  [i64-div0               (/.i64 0 a)               0]
-  [i64-mul0-lft           (*.i64 0 a)               0]
-  [i64-mul0-rgt           (*.i64 a 0)               0])
+  [i32-remove-double-div  (/.i32 1 (/.i32 1 a))     a]
+  [i32-rgt-mult-inverse   (*.i32 a (/.i32 1 a))     1]
+  [i32-lft-mult-inverse   (*.i32 (/.i32 1 a) a)     1]
+  [i32-+-inverses         (-.i32 a a)               0]
+  [i32-*-inverses         (/.i32 a a)               1]
+  [i32-div0               (/.i32 0 a)               0]
+  [i32-mul0-lft           (*.i32 0 a)               0]
+  [i32-mul0-rgt           (*.i32 a 0)               0])
 
-(define-ruleset id-i64 (arithmetic simplify integer)
+(define-ruleset id-i32 (arithmetic simplify integer)
   #:type ([a integer])
-  [+i64-lft-identity-reduce     (+.i64 0 a)     a]
-  [+i64-rgt-identity-reduce     (+.i64 a 0)     a]
-  [-i64-rgt-identity-reduce     (-.i64 a 0)     a]
-  [*i64-lft-identity-reduce     (*.i64 1 a)     a]
-  [*i64-rgt-identity-reduce     (*.i64 a 1)     a]
-  [/i64-rgt-identity-reduce     (/.i64 a 1)     a])
+  [+i32-lft-identity-reduce     (+.i32 0 a)     a]
+  [+i32-rgt-identity-reduce     (+.i32 a 0)     a]
+  [-i32-rgt-identity-reduce     (-.i32 a 0)     a]
+  [*i32-lft-identity-reduce     (*.i32 1 a)     a]
+  [*i32-rgt-identity-reduce     (*.i32 a 1)     a]
+  [/i32-rgt-identity-reduce     (/.i32 a 1)     a])
 
-(define-ruleset unid-i64 (arithmetic integer)
+(define-ruleset unid-i32 (arithmetic integer)
   #:type ([a integer])
-  [+i64-lft-identity-expand    a    (+.i64 0 a)]
-  [+i64-rgt-identity-expand    a    (+.i64 a 0)]
-  [-i64-rgt-identity-expand    a    (-.i64 a 0)]
-  [*i64-lft-identity-expand    a    (*.i64 1 a)]
-  [*i64-rgt-identity-expand    a    (*.i64 a 1)]
-  [/i64-rgt-identity-expand    a    (/.i64 a 1)])
+  [+i32-lft-identity-expand    a    (+.i32 0 a)]
+  [+i32-rgt-identity-expand    a    (+.i32 a 0)]
+  [-i32-rgt-identity-expand    a    (-.i32 a 0)]
+  [*i32-lft-identity-expand    a    (*.i32 1 a)]
+  [*i32-rgt-identity-expand    a    (*.i32 a 1)]
+  [/i32-rgt-identity-expand    a    (/.i32 a 1)])
 
-(define-ruleset average-i64 (arithmetic integer)
+(define-ruleset average-i32 (arithmetic integer)
   #:type ([a integer] [b integer])
-  [i64-avg2   (/.i64 (+.i64 a b) 2)   (+.i64 (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)) 
-                                             (and.i64 (neg.i64 (shr.i64 (+.i64 (and.i64 a b) (shr.i64 (xor.i64 a b) 1)) 63))
-                                                      (xor.i64 a b)))])
+  [i32-avg2   (/.i32 (+.i32 a b) 2)   (+.i32 (+.i32 (and.i32 a b) (shr.i32 (xor.i32 a b) 1)) 
+                                             (and.i32 (neg.i32 (shr.i32 (+.i32 (and.i32 a b) (shr.i32 (xor.i32 a b) 1)) 63))
+                                                      (xor.i32 a b)))])
 
-(define-ruleset saturate-i64 (arithmetic integer)
+(define-ruleset saturate-i32 (arithmetic integer)
   #:type ([a integer] [b integer])
-  [i64-saturate-add+  (+.i64 a b)    INT_MAX.f64]
-  [i64-saturate-add-  (+.i64 a b)    INT_MIN.f64]
-  [i64-saturate-sub+  (-.i64 a b)    INT_MAX.f64]
-  [i64-saturate-sub-  (-.i64 a b)    INT_MIN.f64]
-  [i64-saturate-mul+  (*.i64 a b)    INT_MAX.f64]
-  [i64-saturate-mul-  (*.i64 a b)    INT_MIN.f64])
+  [i32-saturate-add+  (+.i32 a b)    INT_MAX.f32]
+  [i32-saturate-add-  (+.i32 a b)    INT_MIN.f32]
+  [i32-saturate-sub+  (-.i32 a b)    INT_MAX.f32]
+  [i32-saturate-sub-  (-.i32 a b)    INT_MIN.f32]
+  [i32-saturate-mul+  (*.i32 a b)    INT_MAX.f32]
+  [i32-saturate-mul-  (*.i32 a b)    INT_MIN.f32])
 
 (define-ruleset mixed-int-f64 (arithmetic)
-  #:type ([a binary64] [b integer])
+  #:type ([a binary32] [b integer])
   [f64-ldexp-def  (*.f64 a (pow.f64 2 b))       (ldexp.f64 a b)])
 
 (define-ruleset mixed-int-f32 (arithmetic)

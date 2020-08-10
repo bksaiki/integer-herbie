@@ -26,37 +26,37 @@
 
 ;; Operators
 
-(define (int+ arg #:bits [bits 64] . rest)
+(define (int+ arg #:bits [bits 32] . rest)
   (normalize-int (apply + arg rest) bits))
 
-(define (int- arg #:bits [bits 64] . rest)
+(define (int- arg #:bits [bits 32] . rest)
   (normalize-int (apply - arg rest) bits))
 
-(define (int* arg #:bits [bits 64] . rest)
+(define (int* arg #:bits [bits 32] . rest)
   (normalize-int (apply * arg rest) bits))
 
-(define (int/ arg div #:bits [bits 64] . rest)
+(define (int/ arg div #:bits [bits 32] . rest)
   (if (ormap zero? (cons div rest))
       0
       (normalize-int (apply / arg div rest) bits)))
 
-(define (intremainder arg mod #:bits [bits 64])
+(define (intremainder arg mod #:bits [bits 32])
   (normalize-int (remainder arg mod) bits))
 
-(define (intabs arg #:bits [bits 64])
+(define (intabs arg #:bits [bits 32])
   (normalize-int (abs arg) bits))
 
-(define (intshl arg shift #:bits [bits 64])
+(define (intshl arg shift #:bits [bits 32])
   (normalize-int (arithmetic-shift arg shift) bits))
 
-(define (intshr arg shift #:bits [bits 64])
+(define (intshr arg shift #:bits [bits 32])
   (normalize-int (arithmetic-shift arg (- shift)) bits))
 
-(define (intand arg1 arg2 #:bits [bits 64])
+(define (intand arg1 arg2 #:bits [bits 32])
   (normalize-int (bitwise-and arg1 arg2) bits))
 
-(define (intor arg1 arg2 #:bits [bits 64])
+(define (intor arg1 arg2 #:bits [bits 32])
   (normalize-int (bitwise-ior arg1 arg2) bits))
 
-(define (intxor arg1 arg2 #:bits [bits 64])
+(define (intxor arg1 arg2 #:bits [bits 32])
   (normalize-int (bitwise-xor arg1 arg2 bits) bits))
