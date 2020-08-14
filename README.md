@@ -3,8 +3,7 @@ Herbie support for machine integers
 
 This repository contains a plugin for [Herbie](https://herbie.uwplse.org) to support machine integers.
 
-So far, only signed 32-bit integers are supported.
-Use in Herbie by specifying `:precision integer`
+So far, only signed 32-bit integers are supported. Use in Herbie by specifying `:precision integer`.
 
 This package contains:
 

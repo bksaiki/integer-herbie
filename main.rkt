@@ -29,20 +29,6 @@
   32
   (const #f))
 
-;; Constants
-
-(define-constant (INT_MAX INT_MAX.f32) integer
-  [fl (λ () (sub1 (expt 2 63)))]
-  [bf (λ () (bf (sub1 (expt 2 63))))]
-  [ival #f]
-  [nonffi (λ () (sub1 (expt 2 63)))])
-
-(define-constant (INT_MIN INT_MIN.f32) integer
-  [fl (λ () (- (expt 2 63)))]
-  [bf (λ () (bf (- (expt 2 63))))]
-  [ival #f]
-  [nonffi (λ () (- (expt 2 63)))])  
-
 ;; Operators
 
 (define-operator (+ +.i32 integer integer) integer
@@ -312,12 +298,12 @@
 
 (define-ruleset saturate-i32 (arithmetic integer)
   #:type ([a integer] [b integer])
-  [i32-saturate-add+  (+.i32 a b)    INT_MAX.f32]
-  [i32-saturate-add-  (+.i32 a b)    INT_MIN.f32]
-  [i32-saturate-sub+  (-.i32 a b)    INT_MAX.f32]
-  [i32-saturate-sub-  (-.i32 a b)    INT_MIN.f32]
-  [i32-saturate-mul+  (*.i32 a b)    INT_MAX.f32]
-  [i32-saturate-mul-  (*.i32 a b)    INT_MIN.f32])
+  [i32-saturate-add+  (+.i32 a b)     2147483647]
+  [i32-saturate-add-  (+.i32 a b)     -2147483648]
+  [i32-saturate-sub+  (-.i32 a b)     2147483647]
+  [i32-saturate-sub-  (-.i32 a b)     -2147483648]
+  [i32-saturate-mul+  (*.i32 a b)     2147483647]
+  [i32-saturate-mul-  (*.i32 a b)     -2147483648])
 
 (define-ruleset mixed-int-f64 (arithmetic)
   #:type ([a binary32] [b integer])

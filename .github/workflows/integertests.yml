@@ -1,4 +1,4 @@
-name: Posit Benchmarks
+name: Integer Benchmarks
 
 on: [push, repository_dispatch]
 

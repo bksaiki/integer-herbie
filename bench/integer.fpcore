@@ -1,13 +1,13 @@
 (FPCore (x y)
   :name "Midpoint+"
   :precision integer
-  :pre (and (> x 1e9) (> y 1e9))
+  :pre (and (> x 5e8) (> y 5e8))
   (/ (+ x y) 2))
 
 (FPCore (x y)
   :name "Midpoint-"
   :precision integer
-  :pre (and (< x -1e9) (< y -1e9))
+  :pre (and (< x -5e8) (< y -5e8))
   (/ (+ x y) 2))
 
 (FPCore (x y z)
@@ -18,7 +18,7 @@
 (FPCore (x y)
   :name "Add (overflow)"
   :precision integer
-  :pre (and (> x 1e9) (> y 1e9))
+  :pre (and (> x 5e8) (> y 5e8))
   (+ x y))
 
 (FPCore (x y)
@@ -31,4 +31,4 @@
   :name "Associative"
   :precision integer
   :pre (and (> x 0) (> y 0))
-  (/ (* x 1e5) y))
+  (/ (* x 1e4) y))
