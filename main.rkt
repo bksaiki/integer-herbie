@@ -194,7 +194,7 @@
 (define (ldexp x y)
   (* x (expt 2 y)))
 
-(define-operator/libm (ldexp ldexp.f32 ldexp.f32 real integer) real
+(define-operator/libm (ldexp ldexp.f64 ldexp.f32 real integer) real
   [libm ldexp ldexpf] [bf bfldexp] [ival #f]
   [nonffi ldexp])
 
@@ -204,18 +204,18 @@
 (define (ilogb x)
   (round (log x 2)))
 
-(define-operator/libm (ilogb ilogb.f32 ilogb.f32 real) integer
+(define-operator/libm (ilogb ilogb.f64 ilogb.f32 real) integer
   [libm ilogb ilogbf] [bf bfilogb] [ival #f]
   [nonffi ilogb])
 
 (define (bf-bessel f) ; n is an integer
   (λ (n x) (f (bigfloat->integer (bfround n)) x)))
 
-(define-operator/libm (jn jn.f32 jn.f32 integer real) real
+(define-operator/libm (jn jn.f64 jn.f32 integer real) real
   [libm jn jnf] [bf (bf-bessel bfbesj)] [ival #f]
   [nonffi (from-bigfloat (bf-bessel bfbesj))])
 
-(define-operator/libm (yn yn.f32 yn.f32 integer real) real
+(define-operator/libm (yn yn.f64 yn.f32 integer real) real
   [libm yn ynf] [bf (bf-bessel bfbesy)] [ival #f]
   [nonffi (from-bigfloat (bf-bessel bfbesy))])
 

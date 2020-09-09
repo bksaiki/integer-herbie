@@ -11,6 +11,8 @@ This package contains:
 + Mixed integer/float functions from libm
 + Rewrite rules for these operators
 
-The best way to install this package is using the Racket package manager:
+Installation:
 
-    raco pkg install integer-herbie
+1. Clone this repository, preferably into a folder called `integer-herbie`.
+2. If the folder name is `integer-herbie`, run `raco pkg install` within the folder.
+   Otherwise, run `raco pkg install -n integer-herbie`.
